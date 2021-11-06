@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
+import { IData } from './interfaces/data.interface';
+import { DataService } from './services/data.service';
 
 @Component({
   selector: 'app-root',
@@ -7,19 +9,34 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  items:any={};
+  title(title: any) {
+    throw new Error('Method not implemented.');
+  }
 
-  constructor(private http: HttpClient){}
+  itemsData:IData[]=[]; //todo el json
+  items:IData[]=[]; //pageSize
+
+  page = 1;
+  pageSize = 20;
+  collectionSize = 0;
+
+
+  constructor(private dataService:DataService){}
 
   ngOnInit(){
-    this.http.get("https://www.datos.gov.co/resource/3msn-85r9.json")
+    this.dataService.loadData()
     .subscribe(
-      result => {
-        this.items = result;
+      (datos) => {
+        this.itemsData = datos as IData[];
+        this.collectionSize=(datos as IData[]).length; //obtener tamaño
+        this.refreshData();
       },
-      error => {
-        console.log('problemas');
-      }
+      err => console.log(err)
     );
+
+  }
+  refreshData() {
+    this.items = this.itemsData
+    .slice((this.page - 1) * this.pageSize, (this.page - 1) * this.pageSize + this.pageSize);
   }
 }
